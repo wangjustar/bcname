@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="69ca640c-fad3-4d47-9991-af2d32937916" name="sv2016">
+        <fileTransfer rootFolder="/C:" accessType="SFTP" host="lab2.ecnucpp.cn" port="22" sshConfigId="11e22fcd-a143-47a4-bc01-80479c9665e7" sshConfig="administrator@lab2.ecnucpp.cn:22 password">
+          <advancedOptions>
+            <advancedOptions controlEncoding="UTF-16LE" dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
