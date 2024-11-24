@@ -1,15 +1,48 @@
+from web3 import Web3
+import os
+from solcx import compile_files, install_solc
+import json
+
+# 安装并设置 Solidity 编译器版本
+install_solc("0.8.24")  # 根据需要调整版本
+
 class Config:
     # 智能合约地址和ABI
-    contract_address_reg = '0x6ef85E4fB5F40207FAE652B5d4029f3634f0145c'
-    contract_address_agg = '0x3349Fb249b2C8D59c2D53C81d334835B488f3f11'
-    contract_address_rel = '0xd9145CCE52D386f254917e481eB44e9943F39138'
+    w3 = Web3(Web3.HTTPProvider("HTTP://127.0.0.1:7545"))
+    keys = {}
+    default = ''
+    contract_address_reg = '0x8E960A02E7DE8A83861eae437D7A8057170d0EA6'
+    contract_address_agg = '0xc4D4ef68C1f29dA32b8795D3C64d3346743fc134'
+    contract_address_rel = ''
+    # 设置 Solidity 文件路径
+    SOLIDITY_FILE = "Rel.sol"
+    # 编译 Solidity 文件
+    compiled_sol = compile_files([SOLIDITY_FILE], solc_version="0.8.24")
+
+    # 获取第一个合约（如果文件中有多个合约，可根据需要调整）
+    contract_id = list(compiled_sol.keys())[0]
+    contract_interface = compiled_sol[contract_id]
+
+    # 提取 ABI 和 Bytecode
+    abi = contract_interface["abi"]
+    bytecode = contract_interface["bin"]
+
+    # 保存 ABI 为文件（可选）
+    ABI_FILE = "YourContract_abi.json"
+    with open(ABI_FILE, "w") as abi_file:
+        json.dump(abi, abi_file)
     contract_abi_reg = [
+        {
+            "inputs": [],
+            "stateMutability": "nonpayable",
+            "type": "constructor"
+        },
         {
             "inputs": [
                 {
-                    "internalType": "string",
+                    "internalType": "address",
                     "name": "",
-                    "type": "string"
+                    "type": "address"
                 }
             ],
             "name": "Users",
@@ -36,17 +69,17 @@ class Config:
                 },
                 {
                     "internalType": "uint256",
-                    "name": "activeTaskNum",
+                    "name": "income",
                     "type": "uint256"
                 },
                 {
                     "internalType": "uint256",
-                    "name": "finishedTaskNum",
+                    "name": "expand",
                     "type": "uint256"
                 },
                 {
                     "internalType": "uint256",
-                    "name": "releasedTaskNum",
+                    "name": "reput",
                     "type": "uint256"
                 }
             ],
@@ -59,29 +92,15 @@ class Config:
                     "internalType": "address",
                     "name": "_addr",
                     "type": "address"
-                }
-            ],
-            "name": "containsAddr",
-            "outputs": [
-                {
-                    "internalType": "bool",
-                    "name": "",
-                    "type": "bool"
-                }
-            ],
-            "stateMutability": "view",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "string",
-                    "name": "username",
-                    "type": "string"
                 },
                 {
                     "internalType": "uint256",
                     "name": "x",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "reward",
                     "type": "uint256"
                 }
             ],
@@ -93,28 +112,27 @@ class Config:
         {
             "inputs": [
                 {
-                    "internalType": "string",
-                    "name": "_username",
-                    "type": "string"
-                }
-            ],
-            "name": "getUserAddr",
-            "outputs": [
-                {
                     "internalType": "address",
-                    "name": "",
+                    "name": "_addr",
                     "type": "address"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "_reputToDeduct",
+                    "type": "uint256"
                 }
             ],
-            "stateMutability": "view",
+            "name": "deductReputation",
+            "outputs": [],
+            "stateMutability": "nonpayable",
             "type": "function"
         },
         {
             "inputs": [
                 {
-                    "internalType": "string",
-                    "name": "_username",
-                    "type": "string"
+                    "internalType": "address",
+                    "name": "_addr",
+                    "type": "address"
                 }
             ],
             "name": "getUserInfo",
@@ -141,17 +159,17 @@ class Config:
                 },
                 {
                     "internalType": "uint256",
-                    "name": "activeTaskNum",
+                    "name": "income",
                     "type": "uint256"
                 },
                 {
                     "internalType": "uint256",
-                    "name": "finishedTaskNum",
+                    "name": "expand",
                     "type": "uint256"
                 },
                 {
                     "internalType": "uint256",
-                    "name": "releasedTaskNum",
+                    "name": "reput",
                     "type": "uint256"
                 }
             ],
@@ -161,17 +179,42 @@ class Config:
         {
             "inputs": [
                 {
-                    "internalType": "string",
-                    "name": "",
-                    "type": "string"
+                    "internalType": "address",
+                    "name": "_addr",
+                    "type": "address"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "_reputToAdd",
+                    "type": "uint256"
                 }
             ],
-            "name": "loginUsers",
+            "name": "increaseReputation",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "lastRestoreTime",
             "outputs": [
                 {
-                    "internalType": "bool",
+                    "internalType": "uint256",
                     "name": "",
-                    "type": "bool"
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "owner",
+            "outputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
                 }
             ],
             "stateMutability": "view",
@@ -191,30 +234,27 @@ class Config:
             "type": "function"
         },
         {
-            "inputs": [
-                {
-                    "internalType": "string",
-                    "name": "_username",
-                    "type": "string"
-                },
+            "inputs": [],
+            "name": "restoreInterval",
+            "outputs": [
                 {
                     "internalType": "uint256",
-                    "name": "_tasknum",
+                    "name": "",
                     "type": "uint256"
                 }
             ],
-            "name": "releasedTaskFinished",
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "restoreReputation",
             "outputs": [],
             "stateMutability": "nonpayable",
             "type": "function"
         },
         {
             "inputs": [
-                {
-                    "internalType": "string",
-                    "name": "_username",
-                    "type": "string"
-                },
                 {
                     "internalType": "string",
                     "name": "_profile",
@@ -225,9 +265,27 @@ class Config:
             "outputs": [],
             "stateMutability": "nonpayable",
             "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "string",
+                    "name": "_username",
+                    "type": "string"
+                }
+            ],
+            "name": "updateUsername",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
         }
     ]
     contract_abi_agg = [
+        {
+            "inputs": [],
+            "stateMutability": "nonpayable",
+            "type": "constructor"
+        },
         {
             "inputs": [
                 {
@@ -250,14 +308,42 @@ class Config:
         {
             "inputs": [
                 {
-                    "internalType": "bytes32",
-                    "name": "_seed",
-                    "type": "bytes32"
+                    "internalType": "address",
+                    "name": "_complainant",
+                    "type": "address"
+                },
+                {
+                    "internalType": "address",
+                    "name": "_objectUser",
+                    "type": "address"
+                },
+                {
+                    "internalType": "address",
+                    "name": "_transContract",
+                    "type": "address"
                 },
                 {
                     "internalType": "string",
-                    "name": "_receiverName",
+                    "name": "desc",
                     "type": "string"
+                }
+            ],
+            "name": "addDispute",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "_addr",
+                    "type": "address"
+                },
+                {
+                    "internalType": "bytes32",
+                    "name": "_seed",
+                    "type": "bytes32"
                 }
             ],
             "name": "deleteDemandmarket",
@@ -271,11 +357,6 @@ class Config:
                     "internalType": "bytes32",
                     "name": "_seed",
                     "type": "bytes32"
-                },
-                {
-                    "internalType": "string",
-                    "name": "_providerName",
-                    "type": "string"
                 }
             ],
             "name": "deleteResource",
@@ -319,14 +400,19 @@ class Config:
                     "type": "string"
                 },
                 {
-                    "internalType": "string",
-                    "name": "_receiverName",
-                    "type": "string"
+                    "internalType": "address",
+                    "name": "_addr",
+                    "type": "address"
                 },
                 {
                     "internalType": "address",
                     "name": "_contractAddress",
                     "type": "address"
+                },
+                {
+                    "internalType": "string",
+                    "name": "ipaddr",
+                    "type": "string"
                 }
             ],
             "name": "findResource",
@@ -358,11 +444,6 @@ class Config:
                     "internalType": "bytes32",
                     "name": "",
                     "type": "bytes32"
-                },
-                {
-                    "internalType": "string",
-                    "name": "",
-                    "type": "string"
                 },
                 {
                     "internalType": "address",
@@ -399,9 +480,9 @@ class Config:
             "name": "getResourcesWithSeed",
             "outputs": [
                 {
-                    "internalType": "string[]",
+                    "internalType": "address[]",
                     "name": "",
-                    "type": "string[]"
+                    "type": "address[]"
                 }
             ],
             "stateMutability": "view",
@@ -415,9 +496,9 @@ class Config:
                     "type": "bytes32"
                 },
                 {
-                    "internalType": "string",
-                    "name": "_receiverName",
-                    "type": "string"
+                    "internalType": "address",
+                    "name": "_addr",
+                    "type": "address"
                 }
             ],
             "name": "isExistInDemandmarket",
@@ -439,9 +520,9 @@ class Config:
                     "type": "bytes32"
                 },
                 {
-                    "internalType": "string",
-                    "name": "_providerName",
-                    "type": "string"
+                    "internalType": "address",
+                    "name": "_addr",
+                    "type": "address"
                 }
             ],
             "name": "isExistInResources",
@@ -483,7 +564,71 @@ class Config:
                 },
                 {
                     "internalType": "string",
-                    "name": "_providerName",
+                    "name": "_newIpaddr",
+                    "type": "string"
+                }
+            ],
+            "name": "modifyResource",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "bytes32",
+                    "name": "_seed",
+                    "type": "bytes32"
+                },
+                {
+                    "internalType": "string",
+                    "name": "_newTitle",
+                    "type": "string"
+                },
+                {
+                    "internalType": "string",
+                    "name": "_newDesc",
+                    "type": "string"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "_newBlockNum",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "_newCopyrightFee",
+                    "type": "uint256"
+                }
+            ],
+            "name": "modifyWare",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "owner",
+            "outputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "bytes32",
+                    "name": "_seed",
+                    "type": "bytes32"
+                },
+                {
+                    "internalType": "string",
+                    "name": "ipiddr",
                     "type": "string"
                 }
             ],
@@ -510,16 +655,6 @@ class Config:
                     "type": "bytes32"
                 },
                 {
-                    "internalType": "string",
-                    "name": "_plserName",
-                    "type": "string"
-                },
-                {
-                    "internalType": "address",
-                    "name": "_addr",
-                    "type": "address"
-                },
-                {
                     "internalType": "uint256",
                     "name": "_blockNum",
                     "type": "uint256"
@@ -531,6 +666,19 @@ class Config:
                 }
             ],
             "name": "pubishWare",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "_id",
+                    "type": "uint256"
+                }
+            ],
+            "name": "removeDispute",
             "outputs": [],
             "stateMutability": "nonpayable",
             "type": "function"
@@ -550,3 +698,5 @@ class Config:
         }
     ]
     contract_abi_rel = []
+
+
